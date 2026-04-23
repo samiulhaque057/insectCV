@@ -202,16 +202,19 @@ export default function DevicesPage() {
               <div className="space-y-2">
                 <Label>Assigned Area</Label>
                 <Select
-                  value={formData.areaId}
+                  value={formData.areaId || "unassigned"}
                   onValueChange={(value) =>
-                    setFormData((prev) => ({ ...prev, areaId: value }))
+                    setFormData((prev) => ({
+                      ...prev,
+                      areaId: value === "unassigned" ? "" : value,
+                    }))
                   }
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Select an area" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">No area assigned</SelectItem>
+                    <SelectItem value="unassigned">No area assigned</SelectItem>
                     {areas.map((area) => (
                       <SelectItem key={area.id} value={area.id}>
                         {area.name}
