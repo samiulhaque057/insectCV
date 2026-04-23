@@ -1,0 +1,284 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Admin users for authentication
+model Admin {
+  id       String @id @default(cuid())
+  email    String @unique
+  username String @unique
+  password String // bcrypt hashed
+
+  // Status
+  isActive Boolean @default(true)
+
+  // Metadata
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  lastLoginAt   DateTime?
+
+  @@index([email])
+  @@index([isActive])
+}
+
+// Monitoring areas/locations where cameras are deployed
+model Area {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+
+  // GPS coordinates
+  latitude  Float
+  longitude Float
+
+  // Optional geofence radius in meters
+  radius Float?
+
+  // Area status
+  isActive Boolean @default(true)
+
+  // Metadata
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  captures Capture[]
+  devices  Device[]
+
+  @@index([latitude, longitude])
+  @@index([isActive])
+}
+
+// Simulated IoT camera devices
+model Device {
+  id           String     @id @default(cuid())
+  name         String
+  serialNumber String     @unique
+  deviceType   DeviceType @default(CAMERA)
+  isActive     Boolean    @default(true)
+
+  // Location assignment
+  areaId String?
+  area   Area?   @relation(fields: [areaId], references: [id])
+
+  // Metadata
+  lastSyncAt DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  // Relations
+  captures Capture[]
+
+  @@index([areaId])
+  @@index([isActive])
+}
+
+enum DeviceType {
+  CAMERA
+  VIDEO_RECORDER
+  MULTI_SENSOR
+}
+
+// Main capture entity - images and videos
+model Capture {
+  id String @id @default(cuid())
+
+  // Media information
+  mediaType    MediaType
+  mediaUrl     String // Cloudinary URL
+  thumbnailUrl String? // Cloudinary thumbnail URL
+  publicId     String // Cloudinary public ID for management
+
+  // File metadata
+  fileName String
+  fileSize Int // in bytes
+  mimeType String
+  width    Int?
+  height   Int?
+  duration Float? // for videos, in seconds
+
+  // Environmental metadata
+  capturedAt    DateTime // When the capture was taken
+  temperature   Float? // Celsius
+  humidity      Float? // Percentage
+  windSpeed     Float? // km/h
+  windDirection String? // N, NE, E, SE, S, SW, W, NW
+
+  // Capture trigger
+  triggerType TriggerType @default(MOTION)
+
+  // Processing status
+  status CaptureStatus @default(PENDING)
+
+  // Relations
+  areaId String
+  area   Area   @relation(fields: [areaId], references: [id])
+
+  deviceId String?
+  device   Device? @relation(fields: [deviceId], references: [id])
+
+  annotations Annotation[]
+  exports     ExportItem[]
+
+  // Metadata
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([areaId])
+  @@index([deviceId])
+  @@index([capturedAt])
+  @@index([status])
+  @@index([mediaType])
+}
+
+enum MediaType {
+  IMAGE
+  VIDEO
+}
+
+enum TriggerType {
+  MOTION
+  SCHEDULED
+  MANUAL
+}
+
+enum CaptureStatus {
+  PENDING
+  ANNOTATED
+  VERIFIED
+  EXPORTED
+  REJECTED
+}
+
+// Annotations/Classifications for insects in captures
+model Annotation {
+  id String @id @default(cuid())
+
+  // Classification
+  classification Classification
+  confidence     Float? // 0-100, for ML-assisted annotations
+
+  // Bounding box (for image regions)
+  // Coordinates are percentages (0-100) of image dimensions
+  boundingBoxX Float?
+  boundingBoxY Float?
+  boundingBoxW Float?
+  boundingBoxH Float?
+
+  // For video annotations
+  timestampStart Float? // seconds
+  timestampEnd   Float? // seconds
+
+  // Additional details
+  insectType String? // e.g., "Aphid", "Ladybug", "Unknown Beetle"
+  notes      String?
+
+  // Annotation source
+  source AnnotationSource @default(MANUAL)
+
+  // Verification
+  isVerified Boolean   @default(false)
+  verifiedAt DateTime?
+  verifiedBy String?
+
+  // Relations
+  captureId String
+  capture   Capture @relation(fields: [captureId], references: [id], onDelete: Cascade)
+
+  // Metadata
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdBy String? // User identifier for future auth
+
+  @@index([captureId])
+  @@index([classification])
+  @@index([isVerified])
+}
+
+enum Classification {
+  HARMFUL
+  HARMLESS
+  UNKNOWN
+}
+
+enum AnnotationSource {
+  MANUAL
+  ML_ASSISTED
+  IMPORTED
+}
+
+// Export batches for ML training
+model Export {
+  id String @id @default(cuid())
+
+  // Export metadata
+  name        String
+  description String?
+  format      ExportFormat
+
+  // Export statistics
+  totalCaptures Int
+  totalSize     Int // Total size in bytes
+
+  // File information
+  downloadUrl String? // Generated download URL
+  expiresAt   DateTime? // URL expiration
+
+  // Export status
+  status ExportStatus @default(PENDING)
+
+  // Filter criteria used (stored as JSON)
+  filterCriteria Json?
+
+  // Relations
+  items ExportItem[]
+
+  // Metadata
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  completedAt DateTime?
+  createdBy   String?
+
+  @@index([status])
+  @@index([createdAt])
+}
+
+enum ExportFormat {
+  COCO
+  YOLO
+  PASCAL_VOC
+  CSV
+  RAW
+}
+
+enum ExportStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+// Junction table for exports and captures
+model ExportItem {
+  id String @id @default(cuid())
+
+  exportId String
+  export   Export @relation(fields: [exportId], references: [id], onDelete: Cascade)
+
+  captureId String
+  capture   Capture @relation(fields: [captureId], references: [id])
+
+  // Included annotation data snapshot
+  annotationSnapshot Json?
+
+  createdAt DateTime @default(now())
+
+  @@unique([exportId, captureId])
+  @@index([exportId])
+  @@index([captureId])
+}
