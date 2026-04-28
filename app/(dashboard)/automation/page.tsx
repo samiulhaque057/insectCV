@@ -12,6 +12,24 @@ type DetectionResult = {
   insectName: string;
   confidence: number;
   details: string;
+  metadata: {
+    areaName: string;
+    deviceName: string;
+    capturedAt: string;
+    triggerType: "MOTION" | "SCHEDULED" | "MANUAL";
+    temperature: number;
+    humidity: number;
+    windSpeed: number;
+    windDirection: "N" | "NE" | "E" | "SE" | "S" | "SW" | "W" | "NW";
+    source: "MANUAL" | "ML_ASSISTED" | "IMPORTED";
+    insectType: string;
+    notes: string;
+    boundingBoxX: number;
+    boundingBoxY: number;
+    boundingBoxW: number;
+    boundingBoxH: number;
+    verifiedBy: string;
+  };
 };
 
 const HARMFUL_INSECTS = [
@@ -28,10 +46,34 @@ const HARMLESS_INSECTS = [
   { insectName: "Butterfly", details: "Generally harmless pollinator often seen around flowering crops." },
 ];
 
+const AREA_NAMES = ["North Fence", "Rice Plot A", "Greenhouse 2", "East Crop Zone"];
+const DEVICE_NAMES = ["Cam-01", "Fence Sensor A", "Field Unit 3", "Agri Node X"];
+const TRIGGER_TYPES: DetectionResult["metadata"]["triggerType"][] = ["MOTION", "SCHEDULED", "MANUAL"];
+const WIND_DIRECTIONS: DetectionResult["metadata"]["windDirection"][] = [
+  "N",
+  "NE",
+  "E",
+  "SE",
+  "S",
+  "SW",
+  "W",
+  "NW",
+];
+const NOTES = [
+  "Detected near leaf edge with clear body outline.",
+  "Single insect visible under moderate daylight conditions.",
+  "Image quality is sufficient for manual validation.",
+  "Specimen appears centered and suitable for annotation review.",
+];
+
+function randomItem<T>(items: T[]): T {
+  return items[Math.floor(Math.random() * items.length)];
+}
+
 function getRandomResult(): DetectionResult {
   const label: DetectionResult["label"] = Math.random() > 0.5 ? "HARMFUL" : "HARMLESS";
   const pool = label === "HARMFUL" ? HARMFUL_INSECTS : HARMLESS_INSECTS;
-  const selected = pool[Math.floor(Math.random() * pool.length)];
+  const selected = randomItem(pool);
   const confidence = Number((70 + Math.random() * 29).toFixed(1));
 
   return {
@@ -39,6 +81,24 @@ function getRandomResult(): DetectionResult {
     insectName: selected.insectName,
     confidence,
     details: selected.details,
+    metadata: {
+      areaName: randomItem(AREA_NAMES),
+      deviceName: randomItem(DEVICE_NAMES),
+      capturedAt: new Date().toLocaleString(),
+      triggerType: randomItem(TRIGGER_TYPES),
+      temperature: Number((22 + Math.random() * 11).toFixed(1)),
+      humidity: Number((45 + Math.random() * 35).toFixed(1)),
+      windSpeed: Number((2 + Math.random() * 18).toFixed(1)),
+      windDirection: randomItem(WIND_DIRECTIONS),
+      source: "ML_ASSISTED",
+      insectType: selected.insectName,
+      notes: randomItem(NOTES),
+      boundingBoxX: Number((10 + Math.random() * 30).toFixed(1)),
+      boundingBoxY: Number((12 + Math.random() * 28).toFixed(1)),
+      boundingBoxW: Number((18 + Math.random() * 24).toFixed(1)),
+      boundingBoxH: Number((16 + Math.random() * 22).toFixed(1)),
+      verifiedBy: "Demo Reviewer",
+    },
   };
 }
 
@@ -207,6 +267,64 @@ export default function AutomationPage() {
               </div>
               <p className={`text-lg font-semibold ${resultColor}`}>{result.insectName}</p>
               <p className="text-sm text-slate-300">{result.details}</p>
+
+              <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                <div className="rounded-lg border border-white/10 bg-slate-950/60 p-3">
+                  <p className="text-xs text-slate-400">Area</p>
+                  <p className="text-sm font-medium text-slate-100">{result.metadata.areaName}</p>
+                </div>
+                <div className="rounded-lg border border-white/10 bg-slate-950/60 p-3">
+                  <p className="text-xs text-slate-400">Device</p>
+                  <p className="text-sm font-medium text-slate-100">{result.metadata.deviceName}</p>
+                </div>
+                <div className="rounded-lg border border-white/10 bg-slate-950/60 p-3">
+                  <p className="text-xs text-slate-400">Captured At</p>
+                  <p className="text-sm font-medium text-slate-100">{result.metadata.capturedAt}</p>
+                </div>
+                <div className="rounded-lg border border-white/10 bg-slate-950/60 p-3">
+                  <p className="text-xs text-slate-400">Trigger Type</p>
+                  <p className="text-sm font-medium text-slate-100">{result.metadata.triggerType}</p>
+                </div>
+                <div className="rounded-lg border border-white/10 bg-slate-950/60 p-3">
+                  <p className="text-xs text-slate-400">Temperature</p>
+                  <p className="text-sm font-medium text-slate-100">{result.metadata.temperature}°C</p>
+                </div>
+                <div className="rounded-lg border border-white/10 bg-slate-950/60 p-3">
+                  <p className="text-xs text-slate-400">Humidity</p>
+                  <p className="text-sm font-medium text-slate-100">{result.metadata.humidity}%</p>
+                </div>
+                <div className="rounded-lg border border-white/10 bg-slate-950/60 p-3">
+                  <p className="text-xs text-slate-400">Wind Speed</p>
+                  <p className="text-sm font-medium text-slate-100">{result.metadata.windSpeed} km/h</p>
+                </div>
+                <div className="rounded-lg border border-white/10 bg-slate-950/60 p-3">
+                  <p className="text-xs text-slate-400">Wind Direction</p>
+                  <p className="text-sm font-medium text-slate-100">{result.metadata.windDirection}</p>
+                </div>
+                <div className="rounded-lg border border-white/10 bg-slate-950/60 p-3">
+                  <p className="text-xs text-slate-400">Annotation Source</p>
+                  <p className="text-sm font-medium text-slate-100">{result.metadata.source}</p>
+                </div>
+                <div className="rounded-lg border border-white/10 bg-slate-950/60 p-3">
+                  <p className="text-xs text-slate-400">Insect Type</p>
+                  <p className="text-sm font-medium text-slate-100">{result.metadata.insectType}</p>
+                </div>
+                <div className="rounded-lg border border-white/10 bg-slate-950/60 p-3 sm:col-span-2">
+                  <p className="text-xs text-slate-400">Notes</p>
+                  <p className="text-sm font-medium text-slate-100">{result.metadata.notes}</p>
+                </div>
+                <div className="rounded-lg border border-white/10 bg-slate-950/60 p-3 sm:col-span-2 lg:col-span-1">
+                  <p className="text-xs text-slate-400">Bounding Box</p>
+                  <p className="text-sm font-medium text-slate-100">
+                    X: {result.metadata.boundingBoxX}, Y: {result.metadata.boundingBoxY}, W:{" "}
+                    {result.metadata.boundingBoxW}, H: {result.metadata.boundingBoxH}
+                  </p>
+                </div>
+                <div className="rounded-lg border border-white/10 bg-slate-950/60 p-3">
+                  <p className="text-xs text-slate-400">Verified By</p>
+                  <p className="text-sm font-medium text-slate-100">{result.metadata.verifiedBy}</p>
+                </div>
+              </div>
             </div>
           )}
 
