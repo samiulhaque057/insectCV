@@ -36,7 +36,7 @@ export default function DashboardLayout({
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-cyan-500 to-indigo-500">
             <Bug className="h-4 w-4 text-white" />
           </div>
-          <span className="font-semibold text-slate-100">InsectCV</span>
+          <span className="font-semibold text-slate-100">L.E.A.F.</span>
         </Link>
       </div>
 

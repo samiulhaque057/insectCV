@@ -131,9 +131,9 @@ export default function LoginPage() {
               <Bug className="h-10 w-10 text-white" />
             </div>
           </div>
-          <CardTitle className="text-2xl text-transparent bg-clip-text bg-gradient-to-r from-cyan-200 to-indigo-200">InsectCV</CardTitle>
+          <CardTitle className="text-2xl text-transparent bg-clip-text bg-gradient-to-r from-cyan-200 to-indigo-200">L.E.A.F. Dashboard</CardTitle>
           <CardDescription className="text-slate-300/90">
-            Sign in to access the data collection pipeline
+            Laser-Enabled Agricultural Fence: Detection &amp; Analytics Hub
           </CardDescription>
         </CardHeader>
         <CardContent>

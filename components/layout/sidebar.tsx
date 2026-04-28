@@ -11,6 +11,7 @@ import {
   MapPin,
   Radio,
   Download,
+  Cpu,
   Bug,
   ChevronLeft,
   ChevronRight,
@@ -51,6 +52,11 @@ const navItems = [
     title: "Exports",
     href: "/exports",
     icon: Download,
+  },
+  {
+    title: "Automation",
+    href: "/automation",
+    icon: Cpu,
   },
 ];
 
@@ -126,8 +132,8 @@ export function Sidebar({ mobileOpen, onMobileClose }: SidebarProps) {
               </div>
               {(!collapsed || mobileOpen) && (
                 <div className="flex flex-col">
-                  <span className="font-semibold text-slate-100">InsectCV</span>
-                  <span className="text-xs text-slate-300/80">Data Pipeline</span>
+                  <span className="font-semibold text-slate-100">L.E.A.F.</span>
+                  <span className="text-xs text-slate-300/80">Detection & Analytics Hub</span>
                 </div>
               )}
             </Link>

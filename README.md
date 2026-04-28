@@ -1,6 +1,6 @@
-# InsectCV Data Collection Pipeline
+# L.E.A.F — Data Collection Pipeline
 
-A prototype data collection system for training computer vision models to differentiate harmful vs harmless insects in agricultural settings.
+**L.E.A.F** (Localized Entomology & Agriculture Field) is a prototype data collection system for training computer vision models to differentiate harmful vs harmless insects in agricultural settings.
 
 ## Features
 

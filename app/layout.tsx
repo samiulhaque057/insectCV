@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "InsectCV - Data Collection Pipeline",
-  description: "Insect data collection and annotation pipeline for ML training",
+  title: "L.E.A.F. Dashboard — Detection & Analytics Hub",
+  description: "Laser-Enabled Agricultural Fence: Detection & Analytics Hub for ML-based insect classification",
   icons: {
     icon: "/favicon.svg",
   },

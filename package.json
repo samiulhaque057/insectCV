@@ -1,5 +1,5 @@
 {
-  "name": "data-collection-pipeline",
+  "name": "leaf-data-collection-pipeline",
   "version": "0.1.0",
   "private": true,
   "scripts": {
